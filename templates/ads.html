@@ -1,0 +1,1658 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif; 
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 0 20px 20px 40px; /* 移除頂部 padding，保留左右和底部 */
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      margin-bottom: 30px;
+      text-align: center;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .login-container h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1a1a1a;
+    }
+    
+    .login-form {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .login-form input[type="password"] {
+      padding: 12px 16px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.2s;
+      min-width: 250px;
+      background: #ffffff;
+    }
+    
+    .login-form input[type="password"]:focus {
+      border-color: #007aff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    }
+    
+    .login-form button {
+      padding: 10px 20px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .login-form button:hover {
+      background: #0056d6;
+      transform: translateY(-1px);
+    }
+    
+    .main-content {
+      display: none;
+    }
+    
+    .main-content.show {
+      display: block;
+    }
+    
+    .logout-btn {
+      padding: 8px 16px;
+      background: #ff3b30;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #d70015;
+      transform: translateY(-1px);
+    }
+
+    /* 漂浮底部導航欄 */
+    .floating-nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 4px;
+      min-width: 80px;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .nav-button:hover::before {
+      opacity: 0.1;
+    }
+
+    .floating-nav .nav-button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+      color: white !important;
+    }
+
+    .floating-nav .nav-button.active::before {
+      display: none !important;
+    }
+
+ 
+    .nav-button:active {
+      transform: translateY(0);
+      transition: transform 0.1s ease;
+    }
+
+    /* 導航圖標和標籤樣式 */
+    .nav-icon {
+      font-size: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+
+    .floating-nav .nav-button.active .nav-label {
+      color: white !important;
+      font-weight: 700 !important;
+    }
+
+    .nav-button:hover .nav-icon {
+      transform: scale(1.05);
+    }
+
+    /* 觸控設備優化 */
+    @media (hover: none) and (pointer: coarse) {
+      .nav-button {
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+      }
+    }
+    
+    /* 響應式設計 - 漂浮導航 */
+    @media (max-width: 768px) {
+      .floating-nav {
+        bottom: 15px;
+        padding: 6px;
+        gap: 6px;
+      }
+      
+      .nav-button {
+        padding: 10px 14px;
+        min-width: 70px;
+        min-height: 44px; /* 觸控優化 */
+      }
+      
+      .nav-icon {
+        font-size: 22px;
+      }
+      
+      .nav-label {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .floating-nav {
+        bottom: 10px;
+        padding: 5px;
+        gap: 4px;
+      }
+      
+      .nav-button {
+        padding: 8px 12px;
+        min-width: 60px;
+        min-height: 44px; /* 觸控優化 */
+      }
+      
+      .nav-icon {
+        font-size: 20px;
+      }
+      
+      .nav-label {
+        font-size: 9px;
+      }
+    }
+
+    /* 頁籤內容動畫 */
+    .tab-content {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-content.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+    
+    .settings-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+    }
+
+    /* 移除第一個設定卡片的頂部留白 */
+    .tab-content:first-child .settings-card:first-child {
+      margin-top: 0;
+    }
+
+    /* 移除第一個頁籤內容的頂部留白 */
+    .tab-content:first-child {
+      margin-top: 0;
+      padding-top: 0;
+    }
+    
+    .settings-card h2 {
+      color: #1a1a1a;
+      margin-bottom: 20px;
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    
+    .setting-item span {
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .setting-item button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .toggle-on {
+      background: #34c759;
+      color: white;
+    }
+    
+    .toggle-off {
+      background: #ff3b30;
+      color: white;
+    }
+    
+    .toggle-on:hover, .toggle-off:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+      background: #ffffff;
+    }
+    
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    }
+    
+    .form-group input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px dashed #d1d1d1;
+      border-radius: 6px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .form-group input[type="file"]:hover {
+      border-color: #007aff;
+      background: #f0f8ff;
+    }
+    
+    .save-btn {
+      width: 100%;
+      padding: 12px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .save-btn:hover {
+      background: #0056d6;
+      transform: translateY(-1px);
+    }
+
+    .save-btn.saved {
+      background: #34c759 !important;
+      color: white !important;
+      cursor: not-allowed;
+    }
+
+    .save-btn.saved:hover {
+      background: #34c759 !important;
+      transform: none;
+    }
+
+    .utility-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .utility-btn {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .utility-btn.clear {
+      background: #ff9500;
+      color: white;
+    }
+
+    .utility-btn.test {
+      background: #34c759;
+      color: white;
+    }
+
+    .utility-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .utility-btn.clear:hover {
+      background: #e6850e;
+    }
+
+    .utility-btn.test:hover {
+      background: #2fb350;
+    }
+    
+    .ads-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .ads-section h2 {
+      color: #1a1a1a;
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .upload-area {
+      background: #f8f9fa;
+      border: 1px dashed #d1d1d1;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .upload-area:hover {
+      background: #f0f8ff;
+      border-color: #007aff;
+    }
+    
+    .upload-area h3 {
+      color: #007aff;
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .upload-area p {
+      color: #666;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    
+    .upload-form {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .upload-form input[type="file"] {
+      padding: 10px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      min-width: 300px;
+    }
+    
+    .upload-form button {
+      padding: 10px 20px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .upload-form button:hover {
+      background: #0056d6;
+      transform: translateY(-1px);
+    }
+    
+    .ad-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+      border: 1px solid #f0f0f0;
+    }
+    
+    .ad-item:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .ad-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+    
+    .ad-info video {
+      height: 60px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .ad-filename {
+      font-weight: 500;
+      color: #1a1a1a;
+      font-size: 16px;
+    }
+    
+    .ad-controls {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .control-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+    
+    .control-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .move-up { background: #007aff; color: white; }
+    .move-down { background: #34c759; color: white; }
+    .delete { background: #ff3b30; color: white; }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .empty-state p {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .empty-state small {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    /* 手機適配樣式 */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+      
+      .container {
+        max-width: 100%;
+      }
+      
+      .login-container {
+        padding: 24px 20px;
+        margin-bottom: 20px;
+      }
+      
+      .login-container h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .login-form {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .login-form input[type="password"] {
+        min-width: auto;
+        width: 100%;
+        max-width: 280px;
+      }
+      
+      .header {
+        padding: 16px 10px;
+        margin-bottom: 12px;
+      }
+
+      .header-top {
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .header-title {
+        order: 1;
+      }
+        
+      .header h1 {
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+        
+      .header p {
+        font-size: 14px;
+      }
+
+      .logout-btn {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      .toolbar {
+        order: 3;
+        margin-top: 8px;
+      }
+
+      .toolbar-button {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+      
+      .settings-card {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .settings-card h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+      }
+      
+      .setting-item button {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      .ads-section {
+        padding: 20px;
+      }
+      
+      .ads-section h2 {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+      
+      .upload-area {
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      
+      .upload-area h3 {
+        font-size: 15px;
+        margin-bottom: 8px;
+      }
+      
+      .upload-area p {
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+      
+      .upload-form {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .upload-form input[type="file"] {
+        min-width: auto;
+        width: 100%;
+      }
+      
+      .upload-form button {
+        width: 100%;
+        padding: 14px;
+        font-size: 14px;
+      }
+      
+      .ad-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px;
+      }
+      
+      .ad-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+      }
+      
+      .ad-info video {
+        width: 100%;
+        height: auto;
+        max-height: 120px;
+        object-fit: cover;
+      }
+      
+      .ad-filename {
+        font-size: 14px;
+        word-break: break-all;
+      }
+      
+      .ad-controls {
+        width: 100%;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      
+      .control-btn {
+        flex: 1;
+        padding: 10px 8px;
+        font-size: 11px;
+        justify-content: center;
+        min-height: 44px;
+      }
+
+      .utility-buttons {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .utility-btn {
+        padding: 14px;
+        font-size: 14px;
+      }
+      
+      .empty-state {
+        padding: 32px 20px;
+      }
+      
+      .empty-state p {
+        font-size: 16px;
+      }
+      
+      .empty-state small {
+        font-size: 14px;
+      }
+    }
+
+    /* 小手機適配 */
+    @media (max-width: 480px) {
+      body {
+        padding: 8px;
+      }
+      
+      .login-container,
+      .header,
+      .settings-card,
+      .ads-section {
+        border-radius: 12px;
+      }
+      
+      .login-container h2 {
+        font-size: 18px;
+      }
+      
+      .header h1 {
+        font-size: 18px;
+      }
+      
+      .header p {
+        font-size: 12px;
+      }
+      
+      .settings-card h2,
+      .ads-section h2 {
+        font-size: 16px;
+      }
+      
+      .upload-area h3 {
+        font-size: 14px;
+      }
+      
+      .control-btn {
+        font-size: 10px;
+        padding: 8px 6px;
+      }
+
+      .toolbar-button {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+    }
+
+    /* 觸控優化 */
+    @media (hover: none) and (pointer: coarse) {
+      .control-btn,
+      .utility-btn,
+      .setting-item button,
+      .upload-form button,
+      .save-btn,
+      .toolbar-button,
+      .logout-btn {
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      .control-btn:active,
+      .utility-btn:active,
+      .setting-item button:active,
+      .upload-form button:active,
+      .save-btn:active,
+      .toolbar-button:active,
+      .logout-btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s;
+      }
+      
+      .ad-item:hover {
+        transform: none;
+      }
+      
+      .control-btn:hover,
+      .utility-btn:hover,
+      .setting-item button:hover,
+      .upload-form button:hover,
+      .save-btn:hover,
+      .toolbar-button:hover,
+      .logout-btn:hover {
+        transform: none;
+      }
+    }
+
+    /* 橫向手機適配 */
+    @media (max-width: 768px) and (orientation: landscape) {
+      .header-top {
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .header-title {
+        flex: 1;
+        text-align: left;
+      }
+
+      .logout-btn {
+        width: auto;
+        order: 3;
+      }
+
+      .toolbar {
+        order: 4;
+        margin-top: 0;
+        flex: 1;
+      }
+      
+      .settings-card {
+        margin-bottom: 16px;
+      }
+      
+      .ad-item {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .ad-info {
+        flex-direction: row;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .ad-info video {
+        width: auto;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 登入區塊 -->
+    <div class="login-container" id="loginContainer">
+      <h2>🔐 管理員登入</h2>
+      <form class="login-form" id="loginForm">
+        <input type="password" id="passwordInput" placeholder="請輸入管理員密碼" required>
+        <button type="submit">登入</button>
+  </form>
+    </div>
+
+    <!-- 主要內容區塊 -->
+    <div class="main-content" id="mainContent">
+      <!-- 頁面標題和 Toolbar -->
+      <div class="header">
+        
+        <!-- 漂浮底部導航欄 -->
+        <div class="floating-nav">
+          <button class="nav-button active" onclick="showTab('ads', event)">
+            <span class="nav-icon">📺</span>
+            <span class="nav-label">廣告管理</span>
+          </button>
+          <button class="nav-button" onclick="showTab('general', event)">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">基本設定</span>
+          </button>
+          <button class="nav-button" onclick="showTab('print', event)">
+            <span class="nav-icon">🖨️</span>
+            <span class="nav-label">列印設定</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 基本設定分頁 -->
+      <div id="general" class="tab-content">
+        <div class="settings-card">
+          <h2>⚙️ 基本設定</h2>
+          <div class="form-group">
+            <label>伺服器網址</label>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <input type="text" id="serverUrlInput" value="{{ server_url }}" 
+                     placeholder="例如：https://example.com/status" style="flex: 1;">
+              <button type="button" class="save-btn" style="width: auto; padding: 10px 20px;" 
+                      onclick="saveServerUrl()">
+                💾 保存
+              </button>
+            </div>
+            <p style="margin-top: 4px; font-size: 12px; color: #86868b;">
+              ⚠️ 修改後需要重新啟動應用程式才能生效
+            </p>
+          </div>
+          
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f0f0f0;">
+            <h3 style="margin-bottom: 16px; color: #333; font-size: 16px;">快速操作</h3>
+            <div class="setting-item">
+              <span>影片音效</span>
+              <button class="{% if get_muted %}toggle-off{% else %}toggle-on{% endif %}" 
+                      onclick="toggleMute()">
+                {% if get_muted %}🔇 已靜音{% else %}🔊 已開啟{% endif %}
+              </button>
+            </div>
+            <div class="setting-item">
+              <span>語音播報</span>
+              <button class="{% if voice_enabled %}toggle-on{% else %}toggle-off{% endif %}" 
+                      onclick="toggleVoice()">
+                {% if voice_enabled %}🔊 已開啟{% else %}🔇 已關閉{% endif %}
+              </button>
+            </div>
+            <div class="setting-item">
+              <span>顯示畫面</span>
+              <button class="toggle-on" onclick="refreshDisplay()">🔄 重新整理</button>
+            </div>
+            <div class="setting-item">
+              <span>關閉瀏覽器</span>
+              <button class="toggle-off" onclick="closeChromium()">❌ 關閉 Chromium</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 列印設定分頁 -->
+      <div id="print" class="tab-content">
+        <div class="settings-card">
+          <h2>🖨️ 列印設定</h2>
+          
+          <div class="form-group">
+            <label>QR Code 網址模板</label>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <input type="text" id="qrUrlInput" value="{{ qr_url }}" 
+                     placeholder="可用 {number}, {waiting} 變數" style="flex: 1;">
+              <button type="button" class="save-btn" style="width: auto; padding: 10px 20px;" 
+                      onclick="saveQrUrl()">
+                💾 保存
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>印表機 IP 位址</label>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <input type="text" id="printerIpInput" value="{{ printer_ip }}" 
+                     placeholder="例如：192.168.0.151" style="flex: 1;">
+              <button type="button" class="save-btn" style="width: auto; padding: 10px 20px;" 
+                      onclick="savePrinterIp()">
+                💾 保存
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>預設列印張數</label>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <input type="number" id="printCountInput" value="{{ print_count }}" 
+                     min="1" max="10" step="1" style="flex: 1;">
+              <button type="button" class="save-btn" style="width: auto; padding: 10px 20px;" 
+                      onclick="savePrintCount()">
+                💾 保存
+              </button>
+            </div>
+            <p style="margin-top: 4px; font-size: 12px; color: #86868b;">
+              💡 設定範圍：1-10 張，每次列印號碼時會自動列印指定張數
+    </p>
+  </div>
+
+          <div class="form-group">
+            <label>票面背景圖片</label>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <input type="file" id="printBgInput" accept="image/*" style="flex: 1;">
+              <button type="button" class="save-btn" style="width: auto; padding: 10px 20px;" 
+                      onclick="savePrintBg()">
+                💾 上傳
+              </button>
+  </div>
+            <p style="margin-top: 8px; font-size: 13px; color: #86868b;">
+              {% if has_print_bg %}✅ 已上傳背景圖片{% else %}❌ 未上傳背景圖片{% endif %}
+            </p>
+          </div>
+
+          <!-- 工具按鈕 -->
+          <div class="utility-buttons">
+            <a href="/ads/clear_cache?pw=yellowgirl" class="utility-btn clear" 
+               onclick="return confirm('確定要清空列印記錄與暫存嗎？')">
+      🧹 清空列印記錄與暫存
+    </a>
+            <a href="#" class="utility-btn test" onclick="testPrint()">
+              🖨️ 測試列印
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 廣告管理分頁 -->
+      <div id="ads" class="tab-content active">
+        <div class="ads-section">
+          <h2>📺 廣告管理</h2>
+          
+          <!-- 上傳區域 -->
+          <div class="upload-area">
+            <h3>📤 上傳新廣告</h3>
+            <p>支援 MP4 格式，檔案會自動加入播放清單</p>
+            <form class="upload-form" method="post" enctype="multipart/form-data">
+              <input type="file" name="file" accept="video/mp4" required>
+              <button type="submit">上傳影片</button>
+            </form>
+          </div>
+
+          <!-- 廣告列表 -->
+          <h3 style="margin-bottom: 16px; color: #333; font-size: 16px;">目前廣告列表</h3>
+          {% if files %}
+  {% for f in files %}
+              <div class="ad-item">
+                <div class="ad-info">
+        <video src="/static/ads/{{f}}" controls></video>
+                  <span class="ad-filename">{{f}}</span>
+      </div>
+                <div class="ad-controls">
+                  <a href="/ads/move/{{f}}/up?pw=yellowgirl" class="control-btn move-up">⬆️ 上移</a>
+                  <a href="/ads/move/{{f}}/down?pw=yellowgirl" class="control-btn move-down">⬇️ 下移</a>
+                  <a href="/ads/delete/{{f}}?pw=yellowgirl" class="control-btn delete" 
+                     onclick="return confirm('確定要刪除這個廣告嗎？')">🗑️ 刪除</a>
+      </div>
+    </div>
+  {% endfor %}
+          {% else %}
+            <div class="empty-state">
+              <p>目前沒有廣告影片</p>
+              <small>請使用上方上傳功能新增廣告</small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+    // 分頁切換功能
+    function showTab(tabName, event) {
+      console.log('showTab called with:', tabName, event);
+      
+      // 隱藏所有分頁內容
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // 移除所有分頁按鈕的 active 狀態
+      const tabButtons = document.querySelectorAll('.nav-button');
+      tabButtons.forEach(button => {
+        button.classList.remove('active');
+        console.log('Removed active from button:', button);
+      });
+      
+      // 顯示選中的分頁內容
+      const targetContent = document.getElementById(tabName);
+      if (targetContent) {
+        targetContent.classList.add('active');
+        console.log('Added active to content:', tabName);
+      }
+      
+      // 設置選中分頁按鈕的 active 狀態
+      let targetButton = null;
+      if (event && event.target) {
+        // 找到實際的按鈕元素，無論點擊的是按鈕本身還是其子元素
+        targetButton = event.target.closest('.nav-button');
+        console.log('Using event.target:', event.target);
+        console.log('Found closest button:', targetButton);
+      } else {
+        // 如果沒有事件參數，根據 tabName 找到對應按鈕
+        targetButton = document.querySelector(`[onclick*="${tabName}"]`);
+        console.log('Found button by selector:', targetButton);
+      }
+      
+      if (targetButton) {
+        targetButton.classList.add('active');
+        console.log('Added active class to button:', targetButton);
+        console.log('Button classes after:', targetButton.className);
+      } else {
+        console.error('Could not find target button for tab:', tabName);
+      }
+    }
+
+
+
+    // 登入功能
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const password = document.getElementById('passwordInput').value;
+      
+      if (password === 'yellowgirl') {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainContent').classList.add('show');
+        // 儲存登入狀態到 sessionStorage
+        sessionStorage.setItem('adminLoggedIn', 'true');
+      } else {
+        alert('❌ 密碼錯誤！');
+        document.getElementById('passwordInput').value = '';
+      }
+    });
+
+    // 檢查是否已登入
+    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainContent').classList.add('show');
+    }
+
+    // 切換靜音功能
+    function toggleMute() {
+      fetch('/ads/toggle_mute?pw=yellowgirl')
+        .then(response => {
+          if (response.ok) {
+            // 重新載入靜音狀態
+            location.reload();
+          } else {
+            alert('❌ 切換靜音失敗');
+          }
+        })
+        .catch(error => {
+          alert('❌ 切換靜音失敗：' + error.message);
+        });
+    }
+
+    // 切換語音功能
+    function toggleVoice() {
+      fetch('/ads/toggle_voice?pw=yellowgirl')
+        .then(response => {
+          if (response.ok) {
+            // 重新載入語音狀態
+            location.reload();
+          } else {
+            alert('❌ 切換語音失敗');
+          }
+        })
+        .catch(error => {
+          alert('❌ 切換語音失敗：' + error.message);
+        });
+    }
+
+    // 重新整理顯示畫面
+    function refreshDisplay() {
+  fetch("/api/refresh")
+        .then(() => alert("✅ 顯示畫面已要求重新整理"))
+        .catch(() => alert("❌ 重新整理失敗"));
+    }
+
+    // 關閉 Chromium 瀏覽器
+    function closeChromium() {
+      // iOS WebKit 相容性處理
+      let shouldClose = false;
+      
+      // 嘗試使用 confirm，如果失敗則直接執行
+      try {
+        shouldClose = confirm('確定要關閉 Chromium 瀏覽器嗎？\n\n⚠️ 這將會關閉所有 Chromium 進程，包括當前顯示的頁面。');
+      } catch (e) {
+        // iOS WebKit 可能不支援 confirm，直接執行
+        shouldClose = true;
+        console.log('iOS WebKit 相容性：confirm 不可用，直接執行');
+      }
+      
+      if (shouldClose) {
+        // 使用更相容的 fetch 方式
+        const closeRequest = () => {
+          // 方法1: 使用 fetch
+          if (typeof fetch !== 'undefined') {
+            fetch("/api/close_chromium")
+              .then(response => response.json())
+              .then(data => {
+                if (data.status === "success") {
+                  alert(`✅ ${data.message}`);
+                } else if (data.status === "info") {
+                  alert(`ℹ️ ${data.message}`);
+                } else {
+                  alert(`❌ ${data.message}`);
+                }
+              })
+              .catch(error => {
+                console.error('Fetch 失敗:', error);
+                // 備用方法：使用 XMLHttpRequest
+                fallbackRequest();
+              });
+          } else {
+            // 方法2: 使用 XMLHttpRequest (更相容)
+            fallbackRequest();
+          }
+        };
+        
+        // 備用請求方法
+        const fallbackRequest = () => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', '/api/close_chromium', true);
+          xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.status === "success") {
+                  alert(`✅ ${data.message}`);
+                } else if (data.status === "info") {
+                  alert(`ℹ️ ${data.message}`);
+                } else {
+                  alert(`❌ ${data.message}`);
+                }
+              } catch (e) {
+                alert("❌ 關閉 Chromium 失敗：回應格式錯誤");
+              }
+            }
+          };
+          xhr.onerror = function() {
+            alert("❌ 關閉 Chromium 失敗：網路錯誤");
+          };
+          xhr.send();
+        };
+        
+        closeRequest();
+      }
+    }
+
+    // 保存伺服器網址
+    function saveServerUrl() {
+      const serverUrl = document.getElementById('serverUrlInput').value.trim();
+      if (!serverUrl) {
+        alert('❌ 伺服器網址不能為空');
+        return;
+      }
+      
+      if (serverUrl === '{{ server_url }}') {
+        alert('✅ 伺服器網址未變更，無需重複保存。');
+        return;
+      }
+
+      const saveBtn = document.querySelector('[onclick="saveServerUrl()"]');
+      const originalText = saveBtn.innerHTML;
+      
+      // 立即改變按鈕狀態
+      saveBtn.innerHTML = '✅ 已保存';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
+
+      if (confirm('確定要保存伺服器網址嗎？')) {
+        fetch(`/api/save_server_url?pw=yellowgirl`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({server_url: serverUrl})
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) {
+            // 保持已保存狀態
+            setTimeout(() => {
+              saveBtn.innerHTML = '💾 保存';
+              saveBtn.classList.remove('saved');
+              saveBtn.disabled = false;
+            }, 3000); // 3秒後恢復原狀
+          } else {
+            alert(`❌ ${data.error}`);
+            // 恢復原狀
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('saved');
+            saveBtn.disabled = false;
+          }
+        })
+        .catch(error => {
+          alert(`❌ 保存失敗：${error.message}`);
+          // 恢復原狀
+          saveBtn.innerHTML = originalText;
+          saveBtn.classList.remove('saved');
+          saveBtn.disabled = false;
+        });
+      } else {
+        // 用戶取消，恢復原狀
+        saveBtn.innerHTML = originalText;
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 保存 QR Code 網址模板
+    function saveQrUrl() {
+      const qrUrl = document.getElementById('qrUrlInput').value.trim();
+      if (!qrUrl) {
+        alert('❌ QR Code 網址模板不能為空');
+        return;
+      }
+      
+      if (qrUrl === '{{ qr_url }}') {
+        alert('✅ QR Code 網址模板未變更，無需重複保存。');
+        return;
+      }
+
+      const saveBtn = document.querySelector('[onclick="saveQrUrl()"]');
+      const originalText = saveBtn.innerHTML;
+      
+      // 立即改變按鈕狀態
+      saveBtn.innerHTML = '✅ 已保存';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
+
+      if (confirm('確定要保存 QR Code 網址模板嗎？')) {
+        fetch(`/api/save_qr_url?pw=yellowgirl&qr_url=${encodeURIComponent(qrUrl)}`, {method: "POST"})
+          .then(r => r.json())
+          .then(data => {
+            if (data.ok) {
+              // 保持已保存狀態
+              setTimeout(() => {
+                saveBtn.innerHTML = '💾 保存';
+                saveBtn.classList.remove('saved');
+                saveBtn.disabled = false;
+              }, 3000); // 3秒後恢復原狀
+            } else {
+              alert(`❌ ${data.error}`);
+              // 恢復原狀
+              saveBtn.innerHTML = originalText;
+              saveBtn.classList.remove('saved');
+              saveBtn.disabled = false;
+            }
+          })
+          .catch(error => {
+            alert(`❌ 保存失敗：${error.message}`);
+            // 恢復原狀
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('saved');
+            saveBtn.disabled = false;
+          });
+      } else {
+        // 用戶取消，恢復原狀
+        saveBtn.innerHTML = originalText;
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 保存印表機 IP 位址
+    function savePrinterIp() {
+      const printerIp = document.getElementById('printerIpInput').value.trim();
+      if (!printerIp) {
+        alert('❌ 印表機 IP 位址不能為空');
+        return;
+      }
+      
+      if (printerIp === '{{ printer_ip }}') {
+        alert('✅ 印表機 IP 位址未變更，無需重複保存。');
+        return;
+      }
+
+      const saveBtn = document.querySelector('[onclick="savePrinterIp()"]');
+      const originalText = saveBtn.innerHTML;
+      
+      // 立即改變按鈕狀態
+      saveBtn.innerHTML = '✅ 已保存';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
+
+      if (confirm('確定要保存印表機 IP 位址嗎？')) {
+        fetch(`/api/save_printer_ip?pw=yellowgirl&printer_ip=${encodeURIComponent(printerIp)}`, {method: "POST"})
+          .then(r => r.json())
+          .then(data => {
+            if (data.ok) {
+              // 保持已保存狀態
+              setTimeout(() => {
+                saveBtn.innerHTML = '💾 保存';
+                saveBtn.classList.remove('saved');
+                saveBtn.disabled = false;
+              }, 3000); // 3秒後恢復原狀
+            } else {
+              alert(`❌ ${data.error}`);
+              // 恢復原狀
+              saveBtn.innerHTML = originalText;
+              saveBtn.classList.remove('saved');
+              saveBtn.disabled = false;
+            }
+          })
+          .catch(error => {
+            alert(`❌ 保存失敗：${error.message}`);
+            // 恢復原狀
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('saved');
+            saveBtn.disabled = false;
+          });
+      } else {
+        // 用戶取消，恢復原狀
+        saveBtn.innerHTML = originalText;
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 保存預設列印張數
+    function savePrintCount() {
+      const printCount = document.getElementById('printCountInput').value;
+      console.log('準備保存列印張數:', printCount);
+      
+      if (printCount === '{{ print_count }}') {
+        alert('✅ 預設列印張數未變更，無需重複保存。');
+        return;
+      }
+
+      const count = parseInt(printCount);
+      if (isNaN(count) || count < 1 || count > 10) {
+        alert('❌ 請輸入 1-10 之間的數字');
+        return;
+      }
+
+      console.log('驗證通過，準備發送請求，列印張數:', count);
+
+      const saveBtn = document.querySelector('[onclick="savePrintCount()"]');
+      const originalText = saveBtn.innerHTML;
+      
+      // 立即改變按鈕狀態
+      saveBtn.innerHTML = '✅ 已保存';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
+
+      if (confirm('確定要保存預設列印張數嗎？')) {
+        const url = `/api/save_print_count?pw=yellowgirl&print_count=${count}`;
+        console.log('發送請求到:', url);
+        
+        fetch(url, {method: "POST"})
+          .then(r => {
+            console.log('收到響應:', r);
+            return r.json();
+          })
+          .then(data => {
+            console.log('響應數據:', data);
+            if (data.ok) {
+              // 保持已保存狀態
+              setTimeout(() => {
+                saveBtn.innerHTML = '💾 保存';
+                saveBtn.classList.remove('saved');
+                saveBtn.disabled = false;
+              }, 3000); // 3秒後恢復原狀
+            } else {
+              alert(`❌ ${data.error}`);
+              // 恢復原狀
+              saveBtn.innerHTML = originalText;
+              saveBtn.classList.remove('saved');
+              saveBtn.disabled = false;
+            }
+          })
+          .catch(error => {
+            console.error('請求失敗:', error);
+            alert(`❌ 保存失敗：${error.message}`);
+            // 恢復原狀
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('saved');
+            saveBtn.disabled = false;
+          });
+      } else {
+        // 用戶取消，恢復原狀
+        saveBtn.innerHTML = originalText;
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 保存票面背景圖片
+    function savePrintBg() {
+      const fileInput = document.getElementById('printBgInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('❌ 請選擇一個圖片檔案');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB 限制
+        alert('❌ 圖片檔案太大，請選擇小於 10MB 的檔案');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const saveBtn = document.querySelector('[onclick="savePrintBg()"]');
+      const originalText = saveBtn.innerHTML;
+      
+      // 立即改變按鈕狀態
+      saveBtn.innerHTML = '✅ 已保存';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
+
+      if (confirm('確定要上傳票面背景圖片嗎？')) {
+        fetch('/api/upload_print_bg?pw=yellowgirl', {
+          method: 'POST',
+          body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            // 保持已保存狀態
+            setTimeout(() => {
+              saveBtn.innerHTML = '💾 上傳';
+              saveBtn.classList.remove('saved');
+              saveBtn.disabled = false;
+            }, 3000); // 3秒後恢復原狀
+          } else {
+            alert(`❌ ${data.message}`);
+            // 恢復原狀
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('saved');
+            saveBtn.disabled = false;
+          }
+        })
+        .catch(error => {
+          alert(`❌ 上傳失敗：${error.message}`);
+          // 恢復原狀
+          saveBtn.innerHTML = originalText;
+          saveBtn.classList.remove('saved');
+          saveBtn.disabled = false;
+        });
+      } else {
+        // 用戶取消，恢復原狀
+        saveBtn.innerHTML = originalText;
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 測試列印
+    function testPrint() {
+      // 彈出輸入框讓使用者選擇列印張數
+      const count = prompt("請輸入要列印的張數 (1-10):", "{{ print_count }}");
+      if (count === null) return; // 使用者取消
+      
+      const printCount = parseInt(count);
+      if (isNaN(printCount) || printCount < 1 || printCount > 10) {
+        alert("❌ 請輸入 1-10 之間的數字");
+        return;
+      }
+      
+      fetch(`/api/print_test?pw=yellowgirl&count=${printCount}`, {method: "POST"})
+        .then(r => r.json())
+        .then(data => alert(`✅ 已送出測試列印 x${data.printed_count}張`))
+        .catch(() => alert("❌ 測試列印失敗"));
+    }
+  </script>
+</body>
+</html>

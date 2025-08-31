@@ -1,0 +1,22 @@
+# 打印品質配置文件
+# 可以調整以下參數來優化 QR code 的打印品質
+
+# QR Code 設置
+qr_size_ratio=0.45          # QR code 尺寸比例 (相對於票面寬度)
+qr_margin=2                 # QR code 邊距
+qr_api_size=800             # QR code API 生成尺寸
+qr_error_correction=M       # 錯誤修正等級 (L, M, Q, H)
+
+# 圖像處理設置
+sharpness_factor=1.5        # 銳化程度 (1.0-2.0)
+standard_threshold=110      # 標準模式二值化閾值
+high_quality_threshold=105  # 高品質模式二值化閾值
+high_quality_upscale=2      # 高品質模式放大倍數
+
+# 打印機設置
+print_density=0             # 打印密度 (0-3)
+print_quality=33            # 打印品質
+line_spacing=2              # 行間距設置
+
+# 默認設置
+default_high_quality=true   # 默認使用高品質模式

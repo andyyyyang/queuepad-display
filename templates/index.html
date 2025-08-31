@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>QueuePad 叫號顯示</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --glass-bg: rgba(0,0,0,0.25);
+      --glass-border: rgba(255,255,255,0.3);
+    }
+    body, html {
+      margin:0; padding:0; height:100%; width:100%;
+      font-family: "Noto Sans TC", sans-serif;
+      color:#fff; overflow:hidden;
+    }
+    /* 背景影片 */
+    #bg {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      object-fit:cover; z-index:-1;
+      background:#000;  /* 沒載到影片時避免閃白 */
+    }
+    /* 半透明圓角窗格 */
+    .glass-panel {
+      position:absolute; top:3%; left:50%;
+      transform:translateX(-50%);
+      width:90%; height:20%;
+      background:var(--glass-bg);
+      border:1px solid var(--glass-border);
+      backdrop-filter:blur(15px);
+      border-radius:24px;
+      display:flex; flex-direction:row;
+      padding:20px;
+      box-sizing:border-box;
+    }
+    .left, .right {
+      flex:1; display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+    }
+    .left {
+      border-right:1px solid rgba(255,255,255,0.3);
+    }
+    .current {
+      font-size:8vw; font-weight:900;
+      text-shadow:0 0 15px rgba(0,0,0,0.5);
+    }
+    .list {
+      font-size:2vw; display:flex; flex-wrap:wrap;
+      gap:10px; justify-content:center; margin-top:10px;
+    }
+    .badge {
+      background:rgba(0,0,0,0.5);
+      padding:6px 14px; border-radius:12px;
+      font-weight:bold;
+    }
+    /* 直式螢幕時調整 */
+    @media (orientation: portrait) {
+      .glass-panel { flex-direction:column; height:30%; }
+      .left { border-right:0; border-bottom:1px solid rgba(255,255,255,0.3);}
+      .current { font-size:15vw; }
+      .list { font-size:4vw; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景影片 -->
+  <video id="bg" autoplay muted playsinline webkit-playsinline></video>
+  <!-- 語音 -->
+  <audio id="voice" preload="auto" autoplay playsinline webkit-playsinline></audio>
+
+  <!-- 半透明窗格 -->
+  <div class="glass-panel">
+    <div class="left">
+      <div id="current" class="current">--</div>
+    </div>
+    <div class="right">
+      <div style="margin-top:10px;">等候中</div>
+      <div id="waiting" class="list"></div>
+    </div>
+  </div>
+
+<script>
+  let lastCalled = null;
+  let ads = [];
+  let index = 0;
+  let adsTimer = null;
+
+  // ========== 自動播放解鎖 ==========
+  window.addEventListener("DOMContentLoaded", () => {
+    const unlockAudio = new Audio();
+    // 一段無聲音 mp3 (base64)
+    unlockAudio.src = "data:audio/mp3;base64,SUQzAwAAAAAAF1RTU0UAAAAPAAADTGF2ZjU2LjMyLjEwNAAAAAAAAAAAAAA=";
+    unlockAudio.play().then(() => {
+      console.log("✅ Audio autoplay unlocked");
+    }).catch(err => console.warn("⚠️ Unlock failed", err));
+  });
+
+  // ========== 語音播放 helper ==========
+  async function playWithUnmute(audioEl) {
+    try {
+      await audioEl.play();
+    } catch (e) {
+      console.warn("Autoplay blocked, retrying unmuted…", e);
+      audioEl.muted = false;
+      try {
+        await audioEl.play();
+      } catch (err) {
+        console.error("❌ Still failed to play audio", err);
+      }
+    }
+  }
+
+  // 載入廣告清單
+  async function loadAds() {
+    const [adsRes, muteRes] = await Promise.all([
+      fetch("/api/ads", { cache: "no-store" }),
+      fetch("/api/muted", { cache: "no-store" })
+    ]);
+    const adsData = await adsRes.json();
+    const muteData = await muteRes.json();
+    ads = adsData.ads || [];
+    document.getElementById("bg").muted = muteData.muted;
+  }
+
+  // 播放廣告循環
+  function startAds() {
+    const video = document.getElementById("bg");
+    if (!ads.length) return;
+
+    index = 0;
+    video.src = ads[index] + "?t=" + Date.now();
+    video.play().catch(err => console.warn("Video play failed", err));
+
+    if (adsTimer) clearInterval(adsTimer);
+
+    // 每 15 秒切下一支
+    adsTimer = setInterval(() => {
+      index = (index + 1) % ads.length;
+      video.src = ads[index] + "?t=" + Date.now();
+      video.play().catch(err => console.warn("Video play failed", err));
+    }, 15000);
+  }
+
+  // 更新狀態
+  async function loadStatus(){
+    try {
+      const res = await fetch("/api/status", { cache: "no-store" });
+      const data = await res.json();
+      if (data.error) return;
+
+      const currentNum = (data.current != null) ? String(data.current).padStart(3,"0") : "--";
+      document.getElementById("current").textContent = currentNum;
+      const waitingArr = Array.isArray(data.waiting) ? data.waiting : [];
+      document.getElementById("waiting").innerHTML =
+        waitingArr.length ? waitingArr.map(n => `<span class="badge">${n}</span>`).join("") : "無";
+
+      // 播放語音
+      if (data.current != null && data.current !== lastCalled) {
+        lastCalled = data.current;
+        const audio = document.getElementById("voice");
+        audio.src = `/api/speak/${data.current}?t=${Date.now()}`;
+        playWithUnmute(audio);
+      }
+    } catch(err){
+      console.error("Status error:", err);
+    }
+  }
+
+  // 啟動
+  loadAds().then(()=>{
+    startAds();
+  });
+  loadStatus();
+  setInterval(loadStatus, 3000);
+</script>
+
+
+</body>
+</html>
