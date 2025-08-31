@@ -83,16 +83,18 @@
   let lastCalled = null;
   let ads = [];
   let index = 0;
-  let adsTimer = null;
 
   // ========== 自動播放解鎖 ==========
   window.addEventListener("DOMContentLoaded", () => {
     const unlockAudio = new Audio();
-    // 一段無聲音 mp3 (base64)
-    unlockAudio.src = "data:audio/mp3;base64,SUQzAwAAAAAAF1RTU0UAAAAPAAADTGF2ZjU2LjMyLjEwNAAAAAAAAAAAAAA=";
-    unlockAudio.play().then(() => {
-      console.log("✅ Audio autoplay unlocked");
-    }).catch(err => console.warn("⚠️ Unlock failed", err));
+    unlockAudio.src =
+      "data:audio/mp3;base64,SUQzAwAAAAAAF1RTU0UAAAAPAAADTGF2ZjU2LjMyLjEwNAAAAAAAAAAAAAA=";
+    unlockAudio
+      .play()
+      .then(() => {
+        console.log("✅ Audio autoplay unlocked");
+      })
+      .catch((err) => console.warn("⚠️ Unlock failed", err));
   });
 
   // ========== 語音播放 helper ==========
@@ -114,7 +116,7 @@
   async function loadAds() {
     const [adsRes, muteRes] = await Promise.all([
       fetch("/api/ads", { cache: "no-store" }),
-      fetch("/api/muted", { cache: "no-store" })
+      fetch("/api/muted", { cache: "no-store" }),
     ]);
     const adsData = await adsRes.json();
     const muteData = await muteRes.json();
@@ -122,37 +124,37 @@
     document.getElementById("bg").muted = muteData.muted;
   }
 
-  // 播放廣告循環
+  // 播放廣告循環（等播完再切換）
   function startAds() {
     const video = document.getElementById("bg");
     if (!ads.length) return;
 
     index = 0;
     video.src = ads[index] + "?t=" + Date.now();
-    video.play().catch(err => console.warn("Video play failed", err));
+    video.play().catch((err) => console.warn("Video play failed", err));
 
-    if (adsTimer) clearInterval(adsTimer);
-
-    // 每 15 秒切下一支
-    adsTimer = setInterval(() => {
+    // 監聽播完事件，自動切下一支
+    video.onended = () => {
       index = (index + 1) % ads.length;
       video.src = ads[index] + "?t=" + Date.now();
-      video.play().catch(err => console.warn("Video play failed", err));
-    }, 15000);
+      video.play().catch((err) => console.warn("Video play failed", err));
+    };
   }
 
   // 更新狀態
-  async function loadStatus(){
+  async function loadStatus() {
     try {
       const res = await fetch("/api/status", { cache: "no-store" });
       const data = await res.json();
       if (data.error) return;
 
-      const currentNum = (data.current != null) ? String(data.current).padStart(3,"0") : "--";
+      const currentNum =
+        data.current != null ? String(data.current).padStart(3, "0") : "--";
       document.getElementById("current").textContent = currentNum;
       const waitingArr = Array.isArray(data.waiting) ? data.waiting : [];
-      document.getElementById("waiting").innerHTML =
-        waitingArr.length ? waitingArr.map(n => `<span class="badge">${n}</span>`).join("") : "無";
+      document.getElementById("waiting").innerHTML = waitingArr.length
+        ? waitingArr.map((n) => `<span class="badge">${n}</span>`).join("")
+        : "無";
 
       // 播放語音
       if (data.current != null && data.current !== lastCalled) {
@@ -161,18 +163,19 @@
         audio.src = `/api/speak/${data.current}?t=${Date.now()}`;
         playWithUnmute(audio);
       }
-    } catch(err){
+    } catch (err) {
       console.error("Status error:", err);
     }
   }
 
   // 啟動
-  loadAds().then(()=>{
+  loadAds().then(() => {
     startAds();
   });
   loadStatus();
   setInterval(loadStatus, 3000);
 </script>
+
 
 
 </body>
